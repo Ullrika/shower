@@ -1,0 +1,330 @@
+---
+title: "Should I shower before bedtime?"
+author: Your name
+date: today
+format: 
+  html:
+    toc: true
+    embed-resources: true
+bibliography: refs.bib
+---
+
+## Introduction
+
+@haghayegh2019before performed a Systematic Review and Meta-Analysis asking if Before-bedtime passive body heating by warm shower or bath to improve sleep.
+
+To support individual decision making, my aim is to reproduce meta-analysis from @haghayegh2019before and embed it into a decision analysis. 
+
+- *Reproducibility*: Same data -- same analysis
+
+Run a frequentist meta-analysis using a random effects model in the `metafor` package in R [@metafor2010]
+
+- *Robustness*: Same data -- different analysis
+
+Run a Bayesian meta-analysis using a random effects model in `brms` package in R [@brms2017]
+
+- Integrate results into a decision analysis
+
+## Load libraries
+
+```{r}
+#| warning: false
+
+library(readr) # For reading in csv-file
+library(dplyr) # Manage writing, figures and tables 
+library(ggplot2) # For plotting
+
+library(metafor) # Frequentist meta-analysis
+
+library(brms) # Bayesian meta-analysis
+
+```
+
+## Response variable
+
+Sleep Onset Latency
+
+The time it takes a person to fall asleep after turning the lights out.
+
+On average, a healthy person takes between 10 and 20 minutes to fall asleep.
+
+Improved sleep corresponds to a shorter SOL
+
+
+![](img/SOL_explanation.png)
+
+## Model
+
+A meta-analysis is a statistical analysis of multiple studies conducted in a similar way. 
+
+Let $\mu$ be the overall effect size. This is the quantity of interest for the analysis. 
+
+Each of the eleven studies resulted in an estimate $y_i$ and an estimation error $se_i$, where $i = 1,\ldots,11$. 
+
+The estimated effect size for every study is modeled as drawn from a normal distribution with the study specific effect size as the expected value and the estimation error as standard deviation 
+
+$$y_i \sim N(\theta_i,se_i)$$
+
+Effect size for study $i$ is modeled as drawn from a normal distribution with expected value $\mu$ and standard deviation $\tau$. 
+
+$$\theta_i \sim N(\mu,\tau)$$
+
+The standard deviation $\tau$ denotes the between-study heterogeneity.  
+
+## Results from publication
+
+```{r}
+df <- data.frame(mu=-0.43,lower=-0.76, upper = -0.10, model="publication")
+```
+
+@haghayegh2019before estimated the overall effect size to be $\hat{\mu} = `r df$mu`$ with a 95% confidence interval $CI: (`r df$lower`,`r df$upper`)$
+
+## Read in data
+
+```{r}
+#| warning: false
+#| message: false
+
+sol <- read_csv("data/sol.csv") %>%
+  mutate(se = (upper_bound-lower_bound)/(2*qnorm(0.975))) # calculate standard error from 95% confidence interval
+sol
+```
+
+## Frequentist meta-analysis 
+
+For a frequentist version of meta-analysis we use the `metafor` package in R [@metafor2010]
+
+### Run analysis 
+
+```{r}
+rmod <- rma(yi=y,sei=se,data=sol,method="REML")
+summary(rmod)
+```
+
+### Make forest plot 
+
+```{r}
+#| label: fig-forestplot
+#| fig-cap: "Forest plot of standardized mean difference (Cohen's d) between treatment and baseline nights of sleep onset latency (SOL). Results are shown as effect size (ES) and 95% confidence interval (CI). Size of the individual symbol markers is indicative of the weight of the respective studies."
+
+forest(rmod,slab=sol$Study,showweights = TRUE)
+```
+
+
+## Bayesian meta-analysis
+
+We reproduce the meta-analysis in a Bayesian framwork by running the random effects model was run in `brms` [@brms2017].
+
+### Run analysis with default prior
+
+```{r}
+bmod <- brm(y|se(se) ~ 1 + (1|Study), 
+             data = sol,
+             chains = 4, # number of chains in mcmc sampline
+             iter = 4000, # number of iterations in mcmc sampling 
+             file = "models/bmod_default_priors") # model is saved to a file to avoid sampling every time document is rendered. To overrun a saved file, one has to first manually delete it
+
+```
+
+```{r}
+(s_bmod <- summary(bmod)) # we use parentheses to show the results at the same time it is saved into an object
+```
+
+### Various plotting to check convergence
+
+```{r}
+brms::mcmc_plot(bmod, variable = c("b_Intercept","sd_Study__Intercept"), type = "trace")
+```
+
+
+```{r}
+brms::mcmc_plot(bmod, variable = c("b_Intercept","sd_Study__Intercept"), type = "dens_overlay")
+```
+
+## Prior specification 
+
+### Default priors
+
+Without any prior specfication, `brms` uses default priors. 
+
+```{r}
+get_prior(bmod)
+```
+
+### Suggest your own prior
+
+
+```{r}
+priors <- c(prior(normal(0,1), class = Intercept),
+            prior(cauchy(0,0.5), class = sd))
+```
+
+
+### Choose prior
+
+- Overall effect size $\mu$ 
+
+Default: 
+
+$$\frac{\mu + 0.4}{2.5} \sim t(3)$$
+
+My own: 
+
+$$\mu \sim N(0,1)$$
+
+
+
+```{r}
+#| warning: false
+#| echo: false
+
+full_join(data.frame(pp=ppoints(200)) %>%
+  mutate(mu=2.5*qt(pp, df=3)+-0.4)  %>%
+  mutate(pdf=dt((mu--0.04)/2.5, df=3), prior="t"),
+  data.frame(pp=ppoints(200)) %>%
+  mutate(mu=qnorm(pp, mean=0, sd=1)) %>%
+  mutate(pdf=dnorm(mu, mean=0, sd=1), prior="norm"),
+  by = join_by(pp, mu, pdf, prior)) %>%
+  ggplot(aes(x=mu,y=pdf,col=prior)) +
+  geom_line() +
+  labs(title="Intercept") +
+  theme_light()
+
+```
+
+
+- Between-study heterogeneity $\tau$ 
+
+Default: 
+
+$$|\frac{\tau + 0.4}{2.5}| \sim t(3)$$
+
+My own: 
+
+$$|\tau| \sim Cauchy(0,0.5)$$
+
+
+
+```{r}
+#| warning: false
+#| echo: false
+
+full_join(data.frame(pp=ppoints(200)) %>%
+  mutate(tau=2.5*qt(pp, df=3)+-0.4)  %>%
+  mutate(pdf=dt((tau--0.4)/2.5, df=3)/(1-pt(0, df=3)), prior="t"),
+  data.frame(pp=ppoints(200)) %>%
+  mutate(tau=qcauchy(pp,location = 0, scale = 0.5)) %>%
+  mutate(pdf=dcauchy(tau,location = 0, scale = 0.5)/(1-pcauchy(0,location = 0, scale = 0.5)), prior="cauchy"),
+  by = join_by(pp, tau, pdf, prior)) %>%
+  ggplot(aes(x=tau,y=pdf,col=prior)) +
+  geom_line() +
+  xlim(0,10) +
+  labs(title="Standard deviation") +
+  theme_light()
+```
+
+### Run analysis with your own prior
+
+```{r}
+bmod_myown <- brm(y|se(se) ~ 1 + (1|Study),
+             data = sol,
+             prior = priors, # user added priors
+             chains = 4, # number of chains in mcmc sampline
+             iter = 4000, # number of iterations in mcmc sampling
+             file = "models/bmod_myown_priors")
+
+```
+
+### See results and check convergence
+
+```{r}
+(s_bmod_myown <- summary(bmod_myown)) # we use parentheses to show the results at the same time it is saved into an object
+```
+
+
+### Various plotting to check convergence
+
+```{r}
+brms::mcmc_plot(bmod_myown, variable = c("b_Intercept","sd_Study__Intercept"), type = "trace")
+```
+
+
+```{r}
+brms::mcmc_plot(bmod_myown, variable = c("b_Intercept","sd_Study__Intercept"), type = "dens_overlay")
+```
+
+### Various plotting of posterior distributions
+
+```{r}
+brms::mcmc_plot(bmod_myown, variable = c("b_Intercept","sd_Study__Intercept"))
+```
+
+
+```{r}
+brms::mcmc_plot(bmod_myown, variable = c("b_Intercept","sd_Study__Intercept"), type = "areas")
+```
+
+### Extract posterior samples
+
+```{r}
+#| warning: false
+
+post.samples <- brms::posterior_samples(bmod_myown, c("b_Intercept", "sd_Study__Intercept")) # extract posterior sample from mcmc sampling
+names(post.samples) <- c("mu", "tau") # assign better names to sampled parameters
+```
+
+
+## Compare results 
+
+```{r}
+rbind(df,
+data.frame(mu=rmod$beta,lower=rmod$ci.lb, upper = rmod$ci.ub, model="metafor"),
+data.frame(mu=s_bmod$fixed$Estimate,lower=s_bmod$fixed$`l-95% CI`, upper = s_bmod$fixed$`u-95% CI`, model="brms_default"),
+data.frame(mu=s_bmod_myown$fixed$Estimate,lower=s_bmod_myown$fixed$`l-95% CI`, upper = s_bmod_myown$fixed$`u-95% CI`, model="brms_myown")) %>%
+  ggplot(aes(x=mu,y=model,col=model)) +
+  geom_point() +
+  geom_errorbarh(aes(y=model,xmin=lower, xmax=upper)) + 
+  geom_vline(xintercept=0,linetype="dashed") +
+  theme_light() +
+  xlab(expression(mu)) +
+  labs(title="Comparison of estimated overall effect sizes across models")
+
+```
+
+
+
+## Decision analysis
+
+Should I shower or not? 
+
+Trade-off: Shower result in better sleep, but is can be problematic for the skin and consumes warm water. 
+
+Difference in utility when taking a shower compared to not taking a shower: 
+
+$$\Delta(\mu) = 1-\exp(\mu)$$
+
+The Bayes optimal decision is the one that maximises the expected utility. Here, showering is optimal if the difference in utility is larger than 0. 
+
+Utility from showering before bedtime is uncertain considering uncertainty in the estimated overall effect size of the difference in Sleep Onset Latency. 
+
+```{r}
+df_decision_analysis <- data.frame(utility = 1 - exp(post.samples$mu))
+
+df_decision_analysis %>%
+      ggplot(aes(x = utility)) +
+  geom_density() +
+  xlab(expression(Delta(mu))) +
+  theme_light() +
+  labs(title="Uncertainty in utility")
+```
+
+The expected utility is `r mean(df_decision_analysis$utility)`. 
+
+::: {.callout-tip}
+### Conclusion
+
+I performed a Bayesian Evidence Synthesis integrating evidence from multiple studies into a decision analysis of the utility of taking a shower before going to bed. 
+
+My results shows that showering before bedtime will help you to quicker fall asleep.  
+
+:::

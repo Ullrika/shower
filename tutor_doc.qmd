@@ -1,0 +1,279 @@
+---
+title: "HCAS Data Session"
+subtitle: "Should I shower before bedtime?"
+author: Ullrika Sahlin
+format: 
+  html:
+    toc: true
+bibliography: refs.bib
+---
+
+## HCAS Data Session
+
+25 November, 14:00 –16:00
+
+Ullrika Sahlin: Creating a reproducible workflow from data to decision in quarto
+ 
+Quarto [quarto.org](quarto.org) is an accessible and versatile platform for literate programming, allowing users to seamlessly integrate code, data analysis, results, and explanatory text into fully reproducible documents. 
+
+I use Quarto for developing teaching materials, disseminating scientific findings, and creating websites for academic meetings. 
+
+In this session, I will demonstrate how to establish a reproducible workflow in Quarto using a pedagogical example of Bayesian hierarchical modelling. 
+
+The session will culminate in generating a report and publishing it to Git for transparent and shareable communication.
+
+<!-- NordIAS Visting Fellow Ullrika Sahlin. Ullrika is Associate Professor in Environmental Science at Lund University. Her research group focuses on the management of uncertainty and evidence in scientific assessment and decision analysis with quantitative methods such as Expert Knowledge Elicitation, Bayesian modelling, Bias adjustment modelling and Robust Bayesian analysis.  -->
+
+
+### Outline 
+
+- Reproducible workflows 
+
+- A common decision problem 
+
+- Solving the decision problem
+
+- Quarto and git 
+
+
+## Reproducible workflows 
+
+### Reproducibility 
+
+[The Turing Way](https://book.the-turing-way.org/) [-@noauthor_turing_nodate] defines reproducibility in data research as data and code being available to fully rerun the analysis.
+
+![](img/zz-TheTuringWay-previous-Scriberia-2024-May-AllJPG-English-text/reproducible-journey.jpg)
+
+
+
+### Reproducible
+
+The Turing Way define reproducible research as work that can be independently recreated from the same data and the same code that the original team used. 
+
+Reproducible is distinct from replicable, robust and generalisable.
+
+![](img/zz-TheTuringWay-previous-Scriberia-2024-May-AllJPG-English-text/reproducible-definitiongrid.jpg)
+
+
+### Open research 
+
+- Open Data
+
+<!-- Ensure your data is in a simple, standard format or formats which is machine and human-readable. -->
+
+<!-- Check, reformat or create metadata to clearly describe what the data is, how it was collected, and any associated strengths/weaknesses to someone that finds it. -->
+
+<!-- Identify a relevant, easily discoverable repository or repositories to host your data, and upload it there. -->
+
+<!-- Assign your data a persistent identifier such as a DOI. -->
+
+- Open Source Software
+
+<!-- Put your code in a freely accessible repository. -->
+
+<!-- Include a licence granting others the right to use, copy and modify your work. You can use the Licensing chapter to help you pick the most appropriate licence for your project. -->
+
+<!-- Include a README file containing useful information about a project such as what it is, how to use/install it and how to run any tests. -->
+
+<!-- If you want others to collaborate on the project include contribution guidelines. -->
+
+- Open Hardware
+
+<!-- Use open hardware where practical. -->
+
+<!-- Make detailed documentation and designs for any hardware you develop openly available. -->
+
+<!-- Include a licence granting others the right to use, copy and modify your work. You can use this website to help you pick the most appropriate licence for your project. -->
+
+<!-- Include a README file containing useful information about a project (for example, what it is and the materials used). -->
+
+- Open Access
+
+<!-- Publish your research in an open-access journal. -->
+
+<!-- Store a copy or preprint of your work in a freely accessible public repository. -->
+
+- Open Notebooks
+
+<!-- Keep notes in an Electronic Lab Notebook. -->
+
+<!-- Make your notebooks publicly accessible online. -->
+
+### Code documentation and quality
+
+> Some documentation is better than no documentation
+
+> Don't comment bad code — rewrite it! 
+
+> Use library functions whenever feasible
+
+> Use informative and consistent naming
+
+Example from the British Ecology Society Guide to Reproducible Code
+in Ecology and Evolution [@croucher2017guide]
+
+![](img/BES_good_naming.png)
+
+### Version control 
+
+Version control is a systematic approach to record changes made in a file, or set of files, over time. 
+
+This allows you and your collaborators to track the history, see what changed, and recall specific versions later when needed.
+
+Here, I use [https://github.com/Ullrika/shower](https://github.com/Ullrika/shower)
+
+#### Git
+
+To get started, please make sure that your have Git installed on your computer. Instructions for installing Git on Linux, Windows and Mac machines are available [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
+
+
+::: {.callout-note}
+#### Development vs finalised product  
+
+- Git during development stage 
+
+- Zenodo for long term archiving and citability
+:::
+
+## Decision problem
+
+Should I shower before bedtime to help me fall asleep?  
+
+:::: {.columns}
+
+::: {.column width="40%"}
+![](img/2025-11-24_sleep_sahealth.jpg)
+:::
+
+::: {.column width="60%"}
+![](img/2025-11-23_Tips-For-Better-Sleep-1.png)
+:::
+
+::::
+
+
+::: {.callout-note}
+### Spoiler
+
+Yes! To help you fall asleep faster or improve sleep quality you should shower before bed
+
+- Aim for 1-2 hours before bed
+
+- Use warm, not hot, water
+
+- Keep it to 10 minutes
+
+:::
+
+### A Systematic Review and Meta-Analysis
+
+@haghayegh2019before performed a Systematic Review and Meta-Analysis asking if Before-bedtime passive body heating by warm shower or bath to improve sleep.
+
+### Literature search 
+
+
+![](img/haghayegh2019/1-s2.0-S1087079218301552-gr1_lrg.jpg)
+
+Fig. 1. Flow diagram describing the search strategy of the different databases. [from @haghayegh2019before]
+
+### Meta-analysis
+
+Effect size is measured as the mean difference between the baseline and treatment nights divided by the pooled standard deviation. 
+
+![](img/haghayegh2019/1-s2.0-S1087079218301552-gr2_lrg.jpg)
+Fig. 2. Forest plot of standardized mean difference (Cohen's d) between treatment and baseline nights of sleep onset latency (SOL). Results are shown as effect size (ES) and 95% confidence interval (CI). Size of the individual symbol markers is indicative of the weight of the respective studies. [from @haghayegh2019before]
+
+### Random-effects model 
+
+A meta-analysis is a statistical analysis of multiple studies conducted in a similar way. 
+
+Let $\mu$ be the overall effect size. This is the quantity of interest for the analysis. 
+
+Each of the eleven studies resulted in an estimate $y_i$ and an estimation error $se_i$, where $i = 1,\ldots,11$. 
+
+The estimated effect size for every study is modeled as drawn from a normal distribution with the study specific effect size as the expected value and the estimation error as standard deviation 
+
+$$y_i \sim N(\theta_i,se_i)$$
+
+Effect size for study $i$ is modeled as drawn from a normal distribution with expected value $\mu$ and standard deviation $\tau$. 
+
+$$\theta_i \sim N(\mu,\tau)$$
+
+The standard deviation $\tau$ denotes the between-study heterogeneity.  
+
+### Aim 
+
+Reproduce meta-analysis from @haghayegh2019before
+
+- *Reproducibility*: Same data -- same analysis
+
+Run a frequentist meta-analysis using a random effects model in the metafor package in R [@metafor2010]
+
+- *Robustness*: Same data -- different analysis
+
+Run a Bayesian meta-analysis using a random effects model in brms package in R [@brms2017]
+
+- Integrate results into a decision analysis
+
+### Decision analysis 
+
+Should I shower or not? 
+
+Trade-off: Shower result in better sleep, but is can be problematic for the skin and consumes warm water. 
+
+Difference in utility when taking a shower compared to not taking a shower: $\Delta(\mu) = 1-\exp(\mu)$
+
+```{r}
+#| warning: false
+
+library(dplyr)
+library(ggplot2)
+data.frame(mu = seq(-1,1,length.out=100)) %>%
+  mutate(diff_utility = 1 - exp(mu)) %>%
+  ggplot(aes(x=mu, y=diff_utility)) +
+  geom_line() +
+  labs(title="Difference in utility given difference in Sleep Onset Latency") +
+  xlab(expression(mu)) +
+  ylab(expression(Delta(mu))) +
+  theme_light()
+```
+
+Shower if $E_{\mu}(\Delta(\mu)) > 0$ 
+
+
+## Quarto 
+
+Quarto [quarto.org](quarto.org) is an accessible and versatile platform for literate programming, allowing users to seamlessly integrate code, data analysis, results, and explanatory text into fully reproducible documents.
+
+- Install R and Rstudio [https://posit.co/download/rstudio-desktop/](https://posit.co/download/rstudio-desktop/)
+
+- Open a new quarto document
+
+- When opened, install `rmarkdown`
+
+- Render the quarto document 
+
+- Follow Ullrika's instructions
+
+## Bayesian hierachical modelling with `brms`
+
+The `brms` package [https://paulbuerkner.com/brms/](https://paulbuerkner.com/brms/) provides an interface to fit Bayesian generalized (non-)linear multivariate multilevel models using Stan, which is a C++ package for performing full Bayesian inference
+
+
+- Install `RTools` using defaults [https://cran.r-project.org/bin/windows/Rtools/](https://cran.r-project.org/bin/windows/Rtools/)
+
+- Install `brms` (this will also install stan)
+
+```{r}
+#| eval: false
+#| warning: false
+
+install.packages("brms")
+```
+
+
+## Bayesian workflow 
+
+A Bayesian workflow describe steps working with Bayesian modelling. An example taken from [@gelman2020bayesian]
+
+![](img/gelman_workflow.png)
