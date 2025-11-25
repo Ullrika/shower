@@ -1,0 +1,18 @@
+---
+title: "My code"
+author: Ullrika
+date: today
+format: html
+---
+
+## Lets write some code
+
+```{r}
+#| echo: false
+
+val <- 1+4
+```
+
+
+
+$$\mu \sim N(`r val`,2)$$

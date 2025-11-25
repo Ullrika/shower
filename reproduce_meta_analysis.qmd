@@ -1,6 +1,6 @@
 ---
 title: "Should I shower before bedtime?"
-author: Your name
+author: Ullrika 
 date: today
 format: 
   html:
@@ -74,6 +74,8 @@ The standard deviation $\tau$ denotes the between-study heterogeneity.
 ## Results from publication
 
 ```{r}
+#| echo: false
+
 df <- data.frame(mu=-0.43,lower=-0.76, upper = -0.10, model="publication")
 ```
 
@@ -85,9 +87,9 @@ df <- data.frame(mu=-0.43,lower=-0.76, upper = -0.10, model="publication")
 #| warning: false
 #| message: false
 
-sol <- read_csv("data/sol.csv") %>%
-  mutate(se = (upper_bound-lower_bound)/(2*qnorm(0.975))) # calculate standard error from 95% confidence interval
-sol
+(sol <- read_csv("data/sol.csv") %>%
+  mutate(se = (upper_bound-lower_bound)/(2*qnorm(0.975)))) # calculate standard error from 95% confidence interval
+
 ```
 
 ## Frequentist meta-analysis 
@@ -318,7 +320,7 @@ df_decision_analysis %>%
   labs(title="Uncertainty in utility")
 ```
 
-The expected utility is `r mean(df_decision_analysis$utility)`. 
+The expected utility is `r round(mean(df_decision_analysis$utility),2)`. 
 
 ::: {.callout-tip}
 ### Conclusion
