@@ -124,7 +124,7 @@ Here, I use [https://github.com/Ullrika/shower](https://github.com/Ullrika/showe
 
 #### Git
 
-To get started, please make sure that your have Git installed on your computer. Instructions for installing Git on Linux, Windows and Mac machines are available [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
+To get started, please make sure that your have Git installed on your computer. Instructions for installing Git on Linux, Windows and Mac machines are available [here](https://git-scm.com/install/). 
 
 
 ::: {.callout-note}
